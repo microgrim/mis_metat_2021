@@ -1,0 +1,938 @@
+---
+title: "Middle Island Sinkhole Transcriptomics"
+author: "Sharon Grim"
+date: "`r Sys.Date()`"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE, eval = TRUE, warning = FALSE, message = FALSE, fig.width = 10, fig.height = 10, cache=TRUE)
+#set up for following output; go through and (un)comment as needed for other
+#HTML output
+options(scipen = 999, digits=3)
+```
+
+## Table of contents
+1. Overview
+2. Analysis details
+3. Results
+  + Figure 1. Detection of transcripts from marker genes of key metabolic/biogeochemical processes in MAGs (see Table S2 for details).
+  + Figure 2. Relative abundance of transcripts for photosystem genes normalized by total number of sequences in each sample. 
+  + Figure 3. Ratio of transcript abundances for photosystem II (psbA) to photosystem I (psaA) genes in day and night, shown for each MAG (top) with box-and-whisker plots. 
+  + Figure 4. Relative abundance of transcripts for sulfide quinone reductase (SQR) type I (putatively involved in anoxygenic photosynthesis) and type II (putatively involved in sulfide detoxification) genes from the Phormidium MAG, normalized by transcripts recruited to the MAG for each sample. 
+  + Figure 5. Relative abundance of transcripts for key genes for dissimilatory sulfite reduction (dsrA) and reverse dissimilatory sulfite reduction (rdsrA) normalized by total number of sequences in each sample. 
+  + Figure 6. Relative abundance of transcripts for key genes in active autotrophic pathways normalized by total number of sequences in each sample. 
+  + Supplemental Figure 1.
+  + Supplemental Figure 2.
+  + Supplemental Figure 3.
+  + Supplemental Figure 4.
+  + Supplemental Figure 5.
+  + Supplemental Figure 6.
+  + Supplemental Figure 7.
+  + Supplemental Figure 8.
+  + Supplemental Table 2.
+5. Conclusion
+6. References
+
+```{r make_graph_colors}
+#this StackOverflow question was answered with a list of 729 unique hex colors that could be used for graphing: https://stackoverflow.com/questions/309149/generate-distinctly-different-rgb-colors-in-graphs
+#let's take the top 200 to make a color table to start with.
+color_200 <- c("#9BC4E5","#310106","#04640D","#FEFB0A","#FB5514","#E115C0","#00587F","#0BC582","#FEB8C8","#9E8317","#01190F","#847D81","#58018B","#B70639","#703B01","#F7F1DF","#118B8A","#4AFEFA","#FCB164","#796EE6","#000D2C","#53495F","#F95475","#61FC03","#5D9608","#DE98FD","#98A088","#4F584E","#248AD0","#5C5300","#9F6551","#BCFEC6","#932C70","#2B1B04","#B5AFC4","#D4C67A","#AE7AA1","#C2A393","#0232FD","#6A3A35","#BA6801","#168E5C","#16C0D0","#C62100","#014347","#233809","#42083B","#82785D","#023087","#B7DAD2","#196956","#8C41BB","#ECEDFE","#2B2D32","#94C661","#F8907D","#895E6B","#788E95","#FB6AB8","#576094","#DB1474","#8489AE","#860E04","#FBC206","#6EAB9B","#F2CDFE","#645341","#760035","#647A41","#496E76","#E3F894","#F9D7CD","#876128","#A1A711","#01FB92","#FD0F31","#BE8485","#C660FB","#120104","#D48958","#05AEE8","#C3C1BE","#9F98F8","#1167D9","#D19012","#B7D802","#826392","#5E7A6A","#B29869","#1D0051","#8BE7FC","#76E0C1","#BACFA7","#11BA09","#462C36","#65407D","#491803","#F5D2A8","#03422C","#72A46E","#128EAC","#47545E","#B95C69","#A14D12","#C4C8FA","#372A55","#3F3610","#D3A2C6","#719FFA","#0D841A","#4C5B32","#9DB3B7","#B14F8F","#747103","#9F816D","#D26A5B","#8B934B","#F98500","#002935","#D7F3FE","#FCB899","#1C0720","#6B5F61","#F98A9D","#9B72C2","#A6919D","#2C3729","#D7C70B","#9F9992","#EFFBD0","#FDE2F1","#923A52","#5140A7","#BC14FD","#6D706C","#0007C4","#C6A62F","#000C14","#904431","#600013","#1C1B08","#693955","#5E7C99","#6C6E82","#D0AFB3","#493B36","#AC93CE","#C4BA9C","#09C4B8","#69A5B8","#374869","#F868ED","#E70850","#C04841","#C36333","#700366","#8A7A93","#52351D","#B503A2","#D17190","#A0F086","#7B41FC","#0EA64F","#017499","#08A882","#7300CD","#A9B074","#4E6301","#AB7E41","#547FF4","#134DAC","#FDEC87","#056164","#FE12A0","#C264BA","#939DAD","#0BCDFA","#277442","#1BDE4A","#826958","#977678","#BAFCE8","#7D8475","#8CCF95","#726638","#FEA8EB","#EAFEF0","#6B9279","#C2FE4B","#304041","#1EA6A7","#022403","#062A47","#054B17","#F4C673","#02FEC7","#9DBAA8","#775551","#835536","#565BCC")
+color_64 <- c("#000000","#00FF00","#0000FF","#FF0000","#01FFFE","#FFA6FE","#FFDB66","#006401","#010067","#95003A","#007DB5","#FF00F6","#FFEEE8","#774D00","#90FB92","#0076FF","#D5FF00","#FF937E","#6A826C","#FF029D","#FE8900","#7A4782","#7E2DD2","#85A900","#FF0056","#A42400","#00AE7E","#683D3B","#BDC6FF","#263400","#BDD393","#00B917","#9E008E","#001544","#C28C9F","#FF74A3","#01D0FF","#004754","#E56FFE","#788231","#0E4CA1","#91D0CB","#BE9970","#968AE8","#BB8800","#43002C","#DEFF74","#00FFC6","#FFE502","#620E00","#008F9C","#98FF52","#7544B1","#B500FF","#00FF78","#FF6E41","#005F39","#6B6882","#5FAD4E","#A75740","#A5FFD2","#FFB167","#009BFF","#E85EBE")
+color_table <- col2rgb(unique(c(color_200, color_64)))
+
+#extract the Green hues to color our cyanobacteria because we're biased
+G_table <- matrix(nrow=nrow(color_table), ncol=0)
+for(i in 1:ncol(color_table)){ 
+  if(color_table[2,i] > ((color_table[3,i])/2 + 50))
+    if(color_table[2,i] > (color_table[1,i]*2))
+      G_table <- cbind(G_table, color_table[,i])
+}
+
+G_list <- matrix(ncol=ncol(G_table),nrow=0)
+for(i in 1:ncol(G_table)){
+  G_list[i] <- rgb(G_table[1,i], G_table[2,i], G_table[3,i], maxColorValue=255)
+}
+G_list <- unique(G_list)
+
+sorted_G_table <- G_table[,order(G_table[2,], decreasing=FALSE)]
+sorted_G_list <- matrix(ncol=ncol(sorted_G_table),nrow=0)
+for(i in 1:ncol(sorted_G_table)){
+  sorted_G_list[i] <- rgb(sorted_G_table[1,i], sorted_G_table[2,i], sorted_G_table[3,i], maxColorValue=255)
+}
+
+sorted_G_list <- unique(sorted_G_list)
+rm(sorted_G_table)
+rm(G_table)
+#make some non-greens
+RB_table <- matrix(nrow=nrow(color_table), ncol=0)
+for(i in 1:ncol(color_table)){
+  if(color_table[2,i] < ((color_table[3,i])/2 + 50))
+    if(color_table[2,i] < 150)
+    if(color_table[2,i] < (color_table[1,i]*2))
+      RB_table <- cbind(RB_table, color_table[,i])
+}
+
+RB_list <- matrix(ncol=ncol(RB_table),nrow=0)
+for(i in 1:ncol(RB_table)){
+  RB_list[i] <- rgb(RB_table[1,i], RB_table[2,i], RB_table[3,i], maxColorValue=255)
+}
+RB_list <- unique(RB_list)
+sorted_RB_table <- RB_table[,order(RB_table[2,], decreasing=FALSE)]
+sorted_RB_list <- matrix(ncol=ncol(sorted_RB_table),nrow=0)
+for(i in 1:ncol(sorted_RB_table)){
+  sorted_RB_list[i] <- rgb(sorted_RB_table[1,i], sorted_RB_table[2,i], sorted_RB_table[3,i], maxColorValue=255)
+}
+sorted_RB_list <- unique(sorted_RB_list)
+rm(sorted_RB_table)
+rm(RB_table)
+
+#remove duplicate green colors from the overall table
+color_table <- col2rgb(unique(c(subset(color_200, !color_200 %in% G_list), subset(color_64, !color_64 %in% G_list))))
+
+```
+```{r import_libraries}
+#load up all the packages
+library(vegan)
+library(ggplot2)
+library(plyr)
+library(gdata)
+library(scales)
+library(reshape)
+library(tidyr)
+library(viridis)
+library(kableExtra)
+library(stringr)
+
+```
+```{r setup_files}
+#load everything needed for analysis
+#all these files have been refined from IMG datasets, manual curation of KEGG KOs of interest, and metatranscriptomic data processing as described in the manuscript
+path <- "/Volumes/GoogleDrive/My Drive/stuff/Manuscripts/MIStranscripts/"
+file <- "Grim2021_Figure1.txt"
+import_figure_1_df <- read.csv(paste(path, file, sep = ""), header = TRUE, sep = "\t", check.names = FALSE, na.strings = c("NA", "NaN", " "), stringsAsFactors = TRUE)
+levels_time <- c("Day", "Both", "Night", "Inactive")
+levels_phylum <- c("Bacteria", "Alphaproteobacteria", "Betaproteobacteria", "Gammaproteobacteria", "Deltaproteobacteria", "Epsilonproteobacteria", "Cyanobacteria", "Bacteroidetes", "Chloroflexi", "Chlorobi", "Fibrobacteres", "Firmicutes - Clostridia", "Spirochaetes", "Tenericutes", "Verrucomicrobia", "Eukaryota", "Unknown")
+levels_function <- c("Autotrophy (Rubisco)", "Autotrophy WL Pathway (acsB)", "Photosystem I (psaA)", "Photosystem II (psbA)", "Bacteriochlorophyll (bchX/Y/Z)", "Denitrification (nirK)", "Nitrogen fixation (nifH+D/K)", "H2 oxidation (hupL/hydB)", "Methane oxidation (mmoC)", "Oxygen respiration (cbo3, cbb3, cox1, cb1)", "S reduction/oxidation (dsrA/rdsrA)", "Sulfide redox (fcc)", "Sulfite oxidation (aprA)", "Thiosulfate oxidation (soxA)")
+levels_metabolism <- c("C metabolism", "OP", "AP", "N metabolism", "Oxidative pathways", "S cycling")
+import_figure_1_df$Function <- factor(import_figure_1_df$Function, levels = levels_function)
+import_figure_1_df$activity <- factor(import_figure_1_df$activity, levels = levels_time)
+import_figure_1_df$Phylum <- factor(import_figure_1_df$Phylum, levels = levels_phylum)
+import_figure_1_df$Metabolism <- factor(import_figure_1_df$Metabolism, levels = levels_metabolism)
+
+file <- "Grim2021_Figure2_SuppFigure4.txt"
+import_figure_2_suppfigure_4_df <- read.csv(paste(path, file, sep = ""), header = TRUE, sep = "\t", check.names = FALSE, na.strings = c("NA", "NaN", " "), stringsAsFactors = TRUE)
+
+file <- "Grim2021_Figure3.txt"
+import_figure_3_df <- read.csv(paste(path, file, sep = ""), header = TRUE, sep = "\t", check.names = FALSE, na.strings = c("NA", "NaN", " "), stringsAsFactors = TRUE)
+import_figure_3_df$label <- factor(import_figure_3_df$label, levels = c("psbA_2", "psbA_3+4"))
+import_figure_3_df$Organism <- factor(import_figure_3_df$Organism, levels = c("Phormidium", "Planktothrix", "Pseudanabaena", "Spirulina", "Bacillariophyte 1 (Bin_3_1)", "Bacillariophyte 2 (Bin_3_3)", "Unassigned"))
+import_figure_3_df <- import_figure_3_df[!is.na(import_figure_3_df$psbA_psaA),]
+import_figure_3_df <- drop.levels(import_figure_3_df)
+import_figure_3_df <- melt(import_figure_3_df, id.vars = c("Organism", "label", "time"), measure.vars = "psbA_psaA")
+colnames(import_figure_3_df) <- c("Organism", "label", "time", "metric", "ratio_of_transcripts")
+import_figure_3_df$label <- factor(import_figure_3_df$label, levels = unique(import_figure_3_df$label))
+import_figure_3_df$label <- factor(import_figure_3_df$label, levels = c("psbA_2", "psbA_3+4"))
+import_figure_3_df <- import_figure_3_df[order(import_figure_3_df$label),]
+
+file <- "Grim2021_Figure4.txt"
+import_figure_4_df <- read.csv(paste(path, file, sep = ""), header = TRUE, sep = "\t", check.names = FALSE, na.strings = c("NA", "NaN", " "), stringsAsFactors = TRUE)
+import_figure_4_df$label <- factor(import_figure_4_df$label, levels = c("sqrI", "sqrII", "sqrIII", "sqrIV", "sqrV", "sqrVI"))
+import_figure_4_df$Gene <- factor(import_figure_4_df$Gene, levels = unique(import_figure_4_df[order(import_figure_4_df$Organism, import_figure_4_df$label),]$Gene))
+
+file <- "Grim2021_Figure5.txt"
+import_figure_5_df <- read.csv(paste(path, file, sep = ""), header = TRUE, sep = "\t", check.names = FALSE, na.strings = c("NA", "NaN", " "), stringsAsFactors = TRUE)
+import_figure_5_df$WellBinned <- factor(import_figure_5_df$WellBinned, levels = c("well_binned", "not_well_binned"))
+import_figure_5_df$Type <- factor(import_figure_5_df$Type, levels = c("Reductive (dsrA)", "Oxidative (rdsrA)"))
+import_figure_5_df$Protein <- factor(import_figure_5_df$Protein, levels = unique(import_figure_5_df[order(import_figure_5_df$Type, import_figure_5_df$WellBinned, import_figure_5_df$MAG, import_figure_5_df$Organism),]$Protein))
+
+file <- "Grim2021_Figure6.txt"
+import_figure_6_df <- read.csv(paste(path, file, sep = ""), header = TRUE, sep = "\t", check.names = FALSE, na.strings = c("NA", "NaN", " "), stringsAsFactors = TRUE)
+keep <- c("Phormidium", "Planktothrix", "Pseudanabaena", "Spirulina", "Bacillariophyte 1", "Bacillariophyte 2")
+keep <- c(keep, levels(import_figure_6_df$Organism))
+keep <- keep[!duplicated(keep)]
+import_figure_6_df$Organism <- factor(import_figure_6_df$Organism, levels = keep)
+import_figure_6_df$Protein <- factor(import_figure_6_df$Protein, levels = unique(import_figure_6_df$Protein))
+import_figure_6_df <- import_figure_6_df[order(import_figure_6_df$Organism, import_figure_6_df$Protein),]
+
+file <- "Grim2021_SuppFigure1.txt"
+import_suppfigure_1_df <- read.csv(paste(path, file, sep = ""), header = TRUE, sep = "\t", check.names = FALSE, na.strings = c("NA", "NaN", " "), stringsAsFactors = TRUE)
+import_suppfigure_1_df$sample <- factor(import_suppfigure_1_df$sample, levels = c("2007-1D", "2009-1D", "2009-2D", "2009-3D", "2010-1D", "2010-2D", "2011-1D", "2011-2N", "2011-3D", "2012-1D", "2012-2D", "2012-3D", "2012-4N", "2012-5N", "2012-6N"))
+import_suppfigure_1_df$source <- factor(import_suppfigure_1_df$source, levels = c("gDNA", "cDNA"))
+
+file <- "Grim2021_SuppFigure2.txt"
+import_suppfigure_2_df <- read.csv(paste(path, file, sep = ""), header = TRUE, sep = "\t", check.names = FALSE, na.strings = c("NA", "NaN", " "), stringsAsFactors = TRUE)
+
+file <- "Grim2021_SuppFigure3.txt"
+import_suppfigure_3_df <- read.csv(paste(path, file, sep = ""), header = TRUE, sep = "\t", check.names = FALSE, na.strings = c("NA", "NaN", " "), stringsAsFactors = TRUE)
+import_suppfigure_3_df$length <- factor(import_suppfigure_3_df$length, levels = sort(unique(import_suppfigure_3_df$length), decreasing = TRUE))
+import_suppfigure_3_df$scaffold <- factor(import_suppfigure_3_df$scaffold, levels = unique(import_suppfigure_3_df[order(import_suppfigure_3_df$anvi_bin, import_suppfigure_3_df$length),]$scaffold))
+
+file <- "Grim2021_SuppFigure5_6.txt"
+import_suppfigure_5_6_df <- read.csv(paste(path, file, sep = ""), header = TRUE, sep = "\t", check.names = FALSE, na.strings = c("NA", "NaN", " "), stringsAsFactors = TRUE)
+
+file <- "Grim2021_SuppFigure7.txt"
+import_suppfigure_7_df <- read.csv(paste(path, file, sep = ""), header = TRUE, sep = "\t", check.names = FALSE, na.strings = c("NA", "NaN", " "), stringsAsFactors = TRUE)
+
+file <- "Grim2021_SuppFigure8.txt"
+import_suppfigure_8_df <- read.csv(paste(path, file, sep = ""), header = TRUE, sep = "\t", check.names = FALSE, na.strings = c("NA", "NaN", " "), stringsAsFactors = TRUE)
+
+file <- "anvi_bins_summary_table_for_greg.txt"
+import_supptable_2_df <- read.csv(paste(path, file, sep = ""), header = TRUE, sep = "\t", check.names = FALSE, na.strings = c("NA", "NaN", " ", ""), stringsAsFactors = TRUE)
+
+```
+
+
+## Overview
+This document presents the R scripts and analyses to generate the figures and tables in the article, ["Omics-inferred partitioning and expression of diverse biogeochemical functions in a low-O2 cyanobacterial mat community"](https://doi.org/10.1128/mSystems.01042-21).
+
+## Analysis details
+Sequences from this study are available from NCBI under BioProject no. PRJNA72255. Reads from all 15 metagenomes and 6 metatranscriptomes are available in NCBI’s Sequence Read Archive (Table S1). Accession numbers for Metagenome-Assembled-Genome Bins (MAGs) that passed NCBI quality filtering are provided in Table S2. Gene calling and functional annotation was performed by the Joint Genome Institute’s [Integrated Microbial Genomes Expert Review](https://img.jgi.doe.gov/cgi-bin/mer/main.cgi).
+
+I used CONCOCT via [anvi'o](https://anvio.org/) and MetaBat to generate MAGs from the metagenome. I refined some MAGs in anvi'o, notably the cyanobacterial ones.
+
+I used the python script "HTSeq.scripts.count" from [HTSeq](https://htseq.readthedocs.io/en/release_0.11.1/count.html) to stringently recruit transcripts to genes. 
+
+For the purposes of this document, the data have been processed ahead of time so that composite files can be imported and run through scripts. Please see code comments for how to process the raw data from IMG. 
+
+## Results
+### Figure 1.
+
+Let's take a look at the data sourcing this figure.
+
+```{r table_figure_1}
+knitr::kable(import_figure_1_df, caption = "Summary of functions observed in MAGs",
+             format = "html"
+             #format = "latex"
+             ) %>%
+kable_styling(
+  bootstrap_options = c("striped", "hover")
+  #latex_options = "scale_down"
+              ) %>%
+  scroll_box(width = "500px", height = "200px")
+```
+
+The column descriptions are:
+
+* **MAG**: this is the label for each MAG bin extracted from the metagenome. They were arbitrarily assigned by binning software (CONCOCT via anvi'o, or MetaBat), and some were refined through anvi'o as described.
+* **Function**: this is the metabolic function we are looking for, using the gene(s) in parentheses as the indicator. This becomes the label on the x-axis of the figure.
+* **activity**: this category indicates in which time period of samples the function was observed to be transcriptionally active. *"Day"* means that at least one sample (of 3) collected in daytime, had transcripts that recruited to this gene(s). Similarly for *"Night"*. If observed in at least one day and one night sample, then this field is *"Both"*. If we saw the gene in the MAG but it was not transcriptionally active, then this field gets *"Inactive"*.
+* **Metabolism**: this is a broad category for the metabolic function. This is the variable by which we facet the x-axis of the graph.
+* **Taxonomy**: this is the "long form" label for taxonomy. But it isn't really "long form" because I truncated the pipeline-assigned taxonomy to just *"phylum (or class);genus"*.
+* **Phylum**: this is the broad taxonomy by which we facet the y-axis of the graph. But mostly, this field is populated by taxonomy not at the phylum level! How misleading, thanks.
+* **Organism**: this is the genus-level label for each MAG (or most specific taxonomic level, if genus is not available).
+
+So, here is **Figure 1**: Detection of transcripts from marker genes of key metabolic/biogeochemical processes in MAGs (see Table S2 for details).
+
+```{r Figure_1, fig.width = 10, fig.height = 10, include = TRUE, results = "hide"}
+activityColors <- c("white", "grey80", "black", "pink")
+names(activityColors) <- c("Day", "Both", "Night", "Inactive")
+df <- import_figure_1_df
+
+P_Fig1 <- function(){
+g <- ggplot(df, aes(x = Function, y = Organism, size = value))
+g <- g + geom_point(aes(fill = activity, shape = activity))
+g <- g + scale_shape_manual(name = "Period of observed activity", 
+                            labels = c("Day", "Both", "Night", "Inactive"), 
+                            values = c(21, 21, 21, 4), 
+                            guide = guide_legend(override.aes = list(size = 3)))
+g <- g + scale_fill_manual(name = "Period of observed activity", 
+                           labels = c("Day", "Both", "Night", "Inactive"), 
+                           values = activityColors)
+g <- g + scale_size(guide = "none")
+g <- g + facet_grid(Phylum ~ Metabolism, scales = "free", space = "free", labeller = labeller(Phylum = label_wrap_gen(10), Metabolism = label_wrap_gen(10)))
+g <- g + theme(
+  axis.text.x = element_text(angle = 45, hjust = 1))
+g <- g + labs(x = "Function", y = "MAG bin")
+plot(g)
+}
+P_Fig1()
+```
+
+### Figure 2.
+
+Let's take a look at the data sourcing this figure.
+
+```{r table_figure_2}
+knitr::kable(import_figure_2_suppfigure_4_df, caption = "Activity levels of photosynthetic genes in daytime and nighttime.",
+             format = "html"
+             #format = "latex"
+             ) %>%
+kable_styling(
+  bootstrap_options = c("striped", "hover")
+  #latex_options = "scale_down"
+              ) %>%
+  scroll_box(width = "500px", height = "200px")
+```
+
+What do these data mean? This table has some of the same columns as above, here are some new ones.
+
+* **Gene**: this is the messy label for each gene in the metagenome. The label was automatically generated by the assembler and gene annotation software. These are the labels, alongside the GFF file for gene-calling, that the python script "HTSeq.scripts.count" uses to stringently recruit transcripts to genes. So I kept these messy labels, but sometimes had to refine the genes and thus the labels (see below).
+* **label**: in this table, this column is the short-name for each gene. For example, [*psaA*](https://www.genome.jp/dbget-bin/www_bget?K02689) is a key photosynthetic gene for Photosystem I.
+* **time**: this is analogous to the *activity* column from Figure 1, but this time we are keen to parse day from night.
+* **cds_length**: Remember I mentioned the GFF file for gene-calling? This column presents the length of the CDS annotated as this gene. I retained this feature in my analyses because 1). TPM uses gene length; 2). sometimes the assembler was not so great for assembling genes, and 3). sometimes the gene-calling software prematurely called an end to a gene because it observed a stop codon. But in my scrutiny of these contigs, sometimes I could reconcile two pieces of a gene that had been split but were on the same contig. For example, *scaffold_997195__MIS_1179632_merged* is actually the sum of two CDS on the same contig only nucleotides apart, that were attributed to *psbA* but were independently too short to be a complete *psbA* gene. Since the parameters of the "HTSeq.scripts.count" were stringent, if I recovered the split genes, I could sum their recruited transcripts to represent the total recruitment for this gene. 
+* **accession**: This column lists the names of the genes, which you could use to evaluate on IMG. The nomenclature is: (IMG Genome ID)_(gene name) where the IMGdataset is one of three options. The gene name you want to use on IMG will start with "MIS". For example, if you want to find the *psaA* gene 3300002026_MIS_100001039, you would look at IMG Genome ID "3300002026" and search for gene "MIS_100001039" in that dataset.
+* **metric**: this column lists which normalization method I used. *CDS_TPM_sample* means that I normalized using the TPM (Transcripts Per Million) metric, and the denominator is the sum of all transcripts recruited to that sample. *CDS_TPM_bin* means the denominator is the sum of all transcripts recruited to that bin in that sample. Note that if the gene was on a contig that could not be binned, then *CDS_TPM_bin* is NA (not available).
+* **TPM**: this is the normalized transcriptional activity level for each gene, with respect to the metric used.
+
+Figure 2 and Supplemental Figure 4 source from this same table, but Supplemental Figure 4 presents the sample-normalized metric (*CDS_TPM_sample*) whereas Figure 2 uses the bin- and sample-normalized metric (*CDS_TPM_bin*).
+
+**Figure 2**: Relative abundance of transcripts for photosystem genes normalized by total number of sequences in each sample.
+
+```{r Figure_2, fig.width = 10, fig.height = 7, include = TRUE, results = "hide"}
+#Figure 2: psbA and psaA TPM bin-specific. 
+timeColors <- c("white", "grey80")
+names(timeColors) <-  c("day", "night")
+
+df <- import_figure_2_suppfigure_4_df[import_figure_2_suppfigure_4_df$metric == "CDS_TPM_bin",]
+min.y <- 0.1
+df$TPM[df$TPM == 0] <- min.y
+max.y <- round_any(max(df$TPM), 10^round(log10(max(df$TPM))), f = ceiling)
+
+P_Fig2 <- function(){
+g <- ggplot(data = df, aes(x = Gene))
+g <- g + theme_bw()
+g <- g + geom_boxplot(aes(y = TPM, fill = time), position = position_dodge(preserve = "single"))
+g <- g + geom_point(aes(y = TPM, fill = time), position = position_dodge(width = 0.8), shape = 21, show.legend = FALSE)
+g <- g + facet_grid(.~Organism, scales = "free_x", space = "free_x", labeller = labeller(Organism = label_wrap_gen(10)))
+# g <- g + facet_wrap(.~Organism, nrow = 1, scales = "free", labeller = labeller(Organism = label_wrap_gen(10)))
+g <- g + theme(axis.text.x = element_text(angle = 90, hjust = 1, vjust = 0.5, size = 10, color = "black"),
+               strip.text.x = element_text(angle = 90))
+g <- g + scale_x_discrete(breaks = df$Gene, labels = paste(df$label, df$accession, sep = ": "))
+g <- g + labs(x = "Gene", y = "Bin-normalized TPM", 
+              # title = "Expression of gene within each bin", 
+              size = 20)
+g <- g + scale_y_continuous(name = "logTPM", trans = "log10", 
+                            # labels = comma, 
+                            labels = c(0, 1, 100, 10000, 100000),
+                            breaks = c(min.y, 1, 100, 10000, 100000))
+g <- g + scale_fill_manual(values = timeColors)
+plot(g)
+}
+P_Fig2()
+```
+
+### Figure 3.
+
+This figure presents the relative expression of different versions of *psbA* genes in our oxyphototrophs. Let's take a look at the data sourcing this figure.
+
+```{r table_figure_3}
+knitr::kable(import_figure_3_df, caption = "Differences in activity levels of different versions of psbA",
+             format = "html"
+             #format = "latex"
+             ) %>%
+kable_styling(
+  bootstrap_options = c("striped", "hover")
+  #latex_options = "scale_down"
+              ) %>%
+  scroll_box(width = "500px", height = "200px")
+```
+
+* **label**: this builds upon the gene name, by evaluating phylogeny to these *psbA* genes and attributing putative ideal conditions for functioning.
+* **metric**: in this figure and table, I am evaluating the ratio of transcripts attributed to *psbA*, to transcripts attributed to *psaA*. This effort normalizes expression of different *psbA* versions, by the expression of *psaA*. Because *psaA* is transcribed for a protein used in Photosystem I, which is used in both oxygenic photosynthesis (with Photosystem II) and anoxygenic photosynthesis (using SQR), then this is a "baseline" for photosynthesis. In physiological studies, some cyanobacteria have different versions of *psbA* keyed to different physico- or geochemical conditions. The MIS cyanobacteria have at least the dominant *psbA* version which is *psbA4*, some have variant *psbA3* used in low-oxygen conditions, and two members have an anaerobic version *psbA2*. Please see [Grim and Dick, 2016](https://doi.org/10.3389/fmicb.2016.01546) for more information on how we evaluated phylogeny and putative conditions.
+* **ratio_of_transcripts**: here is that ratio.
+
+**Figure 3**: Ratio of transcript abundances for photosystem II (*psbA*) to photosystem I (*psaA*) genes in day and night, shown for each MAG (top) with box-and-whisker plots.
+
+```{r Figure_3, fig.width = 7, fig.height = 4, include = TRUE, results = "hide"}
+df <- import_figure_3_df
+P_Fig3 <- function(){
+g <- ggplot(data = df, aes(x = label))
+g <- g + theme_bw()
+g <- g + geom_boxplot(aes(y = ratio_of_transcripts, fill = time))
+g <- g + geom_point(aes(y = ratio_of_transcripts, fill = time), position = position_dodge(width = 0.8), shape = 21, show.legend = FALSE)
+g <- g + facet_wrap(.~Organism, nrow = 1, labeller = labeller(Organism = label_wrap_gen(10))) #keeps unused factors in each facet, bars same width across panels. y-scales same across facets.
+g <- g + theme(axis.text.x = element_text(angle = 90, hjust = 1, vjust = 0.5, size = 10, color = "black"))
+g <- g + scale_x_discrete(breaks = df$label, labels = paste(df$label, "/ psaA", sep = " "))
+g <- g + labs(x = "psbA to psaA", y = "Ratio of transcripts", 
+              size = 20)
+g <- g + scale_fill_manual(values = timeColors)
+plot(g)
+}
+P_Fig3()
+```
+
+### Figure 4.
+
+This figure presents the relative abundance of different versions of *sqr* genes in the *Phormidium* MAG. Let's take a look at the data sourcing this figure.
+
+```{r table_figure_4}
+knitr::kable(import_figure_4_df, caption = "Differences in activity levels of different versions of sqr",
+             format = "html"
+             #format = "latex"
+             ) %>%
+kable_styling(
+  bootstrap_options = c("striped", "hover")
+  #latex_options = "scale_down"
+              ) %>%
+  scroll_box(width = "500px", height = "200px")
+```
+
+Some of these are familiar. I want to point out this column:
+
+* **metric**: in this case, we are using the bin- and sample-normalized TPM, because we are focused only on *Phormidium*.
+
+**Figure 4**, Relative abundance of transcripts for sulfide quinone reductase (SQR) type I (putatively involved in anoxygenic photosynthesis) and type II (putatively involved in sulfide detoxification) genes from the *Phormidium* MAG, normalized by transcripts recruited to the MAG for each sample.
+
+```{r Figure_4, fig.width = 5, fig.height = 4, include = TRUE, results = "hide"}
+df <- import_figure_4_df[import_figure_4_df$Organism == "Phormidium",]
+P_Fig4 <- function(){
+  g <- ggplot(data = df, aes(x = Gene))
+  g <- g + theme_bw()
+  g <- g + geom_boxplot(aes(y = TPM, fill = time))
+  g <- g + geom_point(aes(y = TPM, fill = time), 
+                      position = position_dodge(width = 0.8),
+                      shape = 21, show.legend = FALSE)
+  g <- g + theme(axis.text.x = element_text(angle = 90, hjust = 1, vjust = 0.5, size = 10, color = "black", face = "italic"))
+  g <- g + scale_x_discrete(breaks = df$Gene, labels = df$label)
+  g <- g + labs(x = "Gene", y = "Bin-normalized TPM", 
+                size = 20)
+  g <- g + scale_fill_manual(values = timeColors)
+  plot(g)
+}
+P_Fig4()
+```
+
+### Figure 5.
+
+This figure presents the relative expression of *dsrA* and *rdsrA* genes in our MAGs. Let's take a look at the data sourcing this figure.
+
+```{r table_figure_5}
+knitr::kable(import_figure_5_df, caption = "Expression of dissimilatory sulfite reduction and reverse dissimilatory sulfite reduction",
+             format = "html"
+             #format = "latex"
+             ) %>%
+kable_styling(
+  bootstrap_options = c("striped", "hover")
+  #latex_options = "scale_down"
+              ) %>%
+  scroll_box(width = "500px", height = "200px")
+```
+
+* **scaffold_anvio**: This is the assembler-generated name for each contig, which I used in my anvi'o analyses. This is 
+* **WellBinned**: I assessed the quality of each MAG bin through metrics of completion and redundancy. Generally, if the MAG had >80% completion and <10% redundancy, it was considered "well_binned".
+* **source**: similar to **time**, has only *day* or *night*. My factor naming is very messy, as you can tell.
+* **Protein**: this is the same column as **accession** above, but again, I'm messy and didn't keep track of my factor names. *(Spoiler: I also use this metagenome and R project for metaproteomics analysis, so in that case "Protein" makes sense.)*
+* **Type**: After extracting all genes annotated as *dsrA* or *rdsrA*, I used the presence of *dsrD* to identify the gene as part of the reductive process, and *dsrEFH* to indicate oxidative.
+
+**Figure 5**, Relative abundance of transcripts for key genes for dissimilatory sulfite reduction (*dsrA*) and reverse dissimilatory sulfite reduction (*rdsrA*) normalized by total number of sequences in each sample.
+
+```{r Figure_5, fig.width = 10, fig.height = 7, include = TRUE, results = "hide"}
+df <- import_figure_5_df
+P_Fig5 <- function(){
+g <- ggplot(data = df, aes(x = Protein))
+g <- g + theme_bw()
+g <- g + geom_boxplot(aes(y = CDS_TPM_sample, fill = source))
+g <- g + geom_point(aes(y = CDS_TPM_sample, fill = source), position = position_dodge(width = 0.8), shape = 21, show.legend = FALSE)
+g <- g + expand_limits(y = 0)
+g <- g + facet_wrap(.~Type, nrow = 1, scales = "free_x", labeller = labeller(Type = label_wrap_gen(10)))
+g <- g + theme(axis.text.x = element_text(angle = 90, hjust = 1, vjust = 0.5, size = 10, color = "black"))
+g <- g + scale_x_discrete(breaks = df$Protein, labels = paste(df$Organism, df$`Gene name`, sep = " "))
+g <- g + labs(x = "Gene", y = "TPM", 
+              size = 20)
+g <- g + scale_fill_manual(values = timeColors)
+plot(g)
+}
+P_Fig5()
+```
+
+### Figure 6.
+
+This figure presents the relative expression of genes from different autotrophic metabolisms in our MAGs. Let's take a look at the data sourcing this figure. This table is comparatively large; it has `r dim(import_figure_6_df)[1]` rows and `r dim(import_figure_6_df)[2]` columns.
+
+```{r table_figure_6}
+drop <- c("transcripts_mapped_to_genes", "A_transcript", "A_sum_sample", "A_sum_bin")
+df <- import_figure_6_df[, !colnames(import_figure_6_df) %in% drop]
+knitr::kable(df, caption = "Expression of autotrophy in MIS MAGs",
+             format = "html"
+             #format = "latex"
+             ) %>%
+kable_styling(
+  bootstrap_options = c("striped", "hover")
+  #latex_options = "scale_down"
+              ) %>%
+  scroll_box(width = "500px", height = "200px")
+```
+
+What do these column names mean?
+
+* **KOCategory**: Now you can look up the gene's KEGG Orthology.
+* **IMGScaffold**: Similar to the **accession** column, only this tells you which IMG Genome ID to look for, and the name of the contig.
+* **gene_id**: Here is the gene name you want to search with on IMG.
+* **Description**: What kind of KO is this?
+* **Category**: is there a COG or pfam associated with this gene as well?
+* **Short name**: similar to **gene_name**
+* **System**: When I made Figure 1, this is the variable by which I faceted the x-axis.
+* **Pathway**: This is the autotrophic metabolism to which this gene belongs. I used this variable to facet the graph.
+* **Label**: in this dataframe, this is used in the x-axis label, and is a composite of the MAG taxonomy and the bin name.
+
+**Figure 6**, Relative abundance of transcripts for key genes in active autotrophic pathways normalized by total number of sequences in each sample.
+
+```{r Figure_6, fig.width = 10, fig.height = 7, include = TRUE, results = "hide"}
+df <- import_figure_6_df
+# #keep all nonzero observations as well as a "token" obs for each autotrophic gene
+# dg <- df[df$CDS_TPM_sample == 0,] #most
+# dg$combo <- paste(dg$Protein, dg$time, sep =" ")
+# dg <- dg[!duplicated(dg$combo),]
+# dg$combo <- factor(dg$combo, levels = unique(dg$combo))
+# 
+# dh <- df[!df$CDS_TPM_sample == 0,] #5%
+# dh$combo <- paste(dh$Protein, dh$time, sep =" ")
+# dh$combo <- factor(dh$combo, levels = unique(dh$combo))
+# dh <- rbind(dh, dg[!dg$combo %in% dh$combo,])
+# dh <- dh[order(dh$Protein),]
+# drop <- "combo"
+# df <- dh[, !colnames(dh) %in% drop]
+
+#let's keep only the non-zero obsrvations
+dh <- df[!(is.na(df$CDS_TPM_sample) | df$CDS_TPM_sample == 0),] #20%
+dh$combo <- paste(dh$Protein, dh$time, sep =" ")
+dh$combo <- factor(dh$combo, levels = unique(dh$combo))
+drop <- "combo"
+df <- dh[!is.na(dh$Protein), !colnames(dh) %in% drop]
+df <- drop.levels(df)
+df$Protein <- factor(df$Protein, levels = unique(df$Protein))
+
+df <- df[!is.na(df$MAG),]
+
+P_Fig6 <- function(){
+g <- ggplot(data = df, aes(x = Protein))
+g <- g + theme_bw()
+g <- g + geom_boxplot(aes(y = CDS_TPM_sample, fill = time))
+g <- g + geom_point(aes(y = CDS_TPM_sample, fill = time), position = position_dodge(width = 0.8), shape = 21, show.legend = FALSE)
+g <- g + scale_fill_manual(values = timeColors)
+g <- g + theme(axis.text.x = element_text(angle = 90, hjust = 1, vjust = 0.5, size = 7, color = 'black'))
+g <- g + labs(x = "Gene", y = "Sample-normalized TPM", size = 20)
+g <- g + scale_x_discrete(breaks = df$Protein, labels = str_wrap(paste(df$Label, df$Protein, sep = ": "), width = 20))
+g <- g + facet_grid(.~Pathway, scales = "free", space = "free_x", labeller = labeller(Pathway = label_wrap_gen(10)))
+g <- g + theme(legend.position = "right")
+plot(g)
+}
+P_Fig6()
+```
+
+-----
+
+### Supplemental Figure 1.
+
+What is relative abundance of taxa across time (in the metagenome), and what is their contribution to the metatranscriptomic samples? I lumped together MAGs of the same taxonomy. For each MAG in each sample, I used the average coverage of contigs assigned to that MAG.
+
+```{r SuppFigure_1, fig.width = 10, fig.height = 10, include = TRUE, results = "hide"}
+
+df <- import_suppfigure_1_df
+anvi_bins_list_main <- c("bin_208", "bin_118", "bin_182", "bin_212", "bin_50", "Bin_7_3-contigs", "bin_153", "bin_207", "bin_228", "bin_28", "bin_33", "bin_57", "bin_69", "bin_88", "bin_9", "bin_92", "bin_227", "bin_112", "bin_132", "bin_127", "bin_151", "bin_91", "bin_122", "bin_131", "Bin_4_4-contigs", "bin_70", "bin_229", "bin_246", "Bin_4_1-contigs", "Bin_4_3_4-contigs", "bin_120", "bin_8", "Bin_1", "bin_235_243", "bin_143", "bin_256", "bin_5", "bin_101", "bin_26", "bin_102", "bin_209", "Bin_6_9-contigs", "bin_49", "Bin_6_3-contigs", "bin_86", "bin_45", "bin_158", "bin_199", "Bin_3_1", "Bin_3_3", "bin_187")
+oldnames <- levels(df$anvi_bin)[!levels(df$anvi_bin) %in% anvi_bins_list_main]
+newnames <- rep("Other bins", length(oldnames))
+df$plot_label <- mapvalues(df$anvi_bin, from = oldnames, to = newnames)
+
+myColors <- RB_list[1:length(levels(df$Taxonomy))]
+names(myColors) <- levels(df$Taxonomy)
+#bind green to cyanos
+myColors[grep("Cyanobacteria", names(myColors))] <- c("#01D0FF", "#00FF00", "#006401", "#01FFFE", "#128EAC")
+#bind white to Eukaryota
+myColors[grep("Eukaryota", names(myColors))] <- "#FFFFFF"
+
+P_SuppFig1 <- function(){
+g <- ggplot(data = df, aes(x = sample, y = coverage, fill = Taxonomy))
+g <- g + theme_bw()
+g <- g + geom_bar(stat = "identity", width = 0.90, show.legend = TRUE, position = "fill")
+g <- g + geom_bar(stat = "identity", width = 0.90, color = "black", position = "fill")
+g <- g + scale_y_continuous(labels = scales::percent)
+g <- g + scale_fill_manual(values = myColors)
+g <- g + facet_grid(.~source, scales = "free_x", space = "free_x")
+g <- g + theme(axis.text.x = element_text(angle = 90, hjust = 0.5, vjust = 0.5, size = 10, color = 'black'))
+g <- g + guides(fill=guide_legend(ncol=2,byrow=FALSE))
+plot(g)
+}
+P_SuppFig1()
+```
+
+### Supplemental Figure 2.
+
+Though the *Phormidium* MAG is very important to the MIS metagenome and metatranscriptomic data, it's actually not that well binned. There are multiple copies of SCGs (single copy genes) on contigs that are taxonomically distinct on a genus level, suggesting strain heterogeneity in the MAG. I extracted all the contigs from the *Phormidium* MAG that had a SCG, then looked at the length of that contig, the length of the SCG, the position of the SCG on the contig, and the taxonomy of the contig 
+
+In this graph, each bar represents one contig, and the colored portion represents the location and length of a SCG. The contigs are ordered by length, with the longest contig with a SCG on the left. The color relates to the  taxonomy assigned to that contig. Thankfully, all the contigs were cyanobacterial in taxonomy.
+
+```{r SuppFigure_2, fig.width = 10, fig.height = 7, include = TRUE, results = "hide"}
+df <- import_suppfigure_2_df[!duplicated(import_suppfigure_2_df$scaffold_anvio),]
+df <- df[order(df$scaffold_length, decreasing = TRUE),]
+df$gene_name <- "nothing"
+df$start <- 1
+df$stop <- as.numeric(df$scaffold_length)
+df$copy_number <- "0"
+# keep <- c("scaffold_anvio", "gene_name", "start", "stop", "scaffold_length", "copy_number", "genus")
+keep <- c("IMGScaffold", "scaffold_anvio", "gene_name", "start", "stop", "scaffold_length", "copy_number", "genus")
+df <- df[, colnames(df) %in% keep]
+df$IMGScaffold <- factor(df$IMGScaffold, levels = unique(df$IMGScaffold))
+df$copy_number <- factor(df$copy_number, levels = c("0", "1", "2", "3", "4", "5"))
+df$genus <- factor(df$genus, levels = unique(df$genus))
+
+dg <- import_suppfigure_2_df[, colnames(import_suppfigure_2_df) %in% keep]
+dg <- dg[order(dg$scaffold_length, decreasing = TRUE),]
+dg$IMGScaffold <- factor(dg$IMGScaffold, levels = unique(dg$IMGScaffold))
+dg$copy_number <- factor(dg$copy_number, levels = c("0", "1", "2", "3", "4", "5"))
+dg$genus <- factor(dg$genus, levels = unique(dg$genus))
+
+Bin_1_scaffolds <- as.character(levels(df$IMGScaffold))
+df_names <- setNames(object = as.character(c(1:length(Bin_1_scaffolds))),
+                     nm = Bin_1_scaffolds)
+Bin_1_scaffolds <- factor(x = Bin_1_scaffolds, levels = rev(Bin_1_scaffolds))
+
+P_SuppFig2 <- function(){
+  #plot code from here: https://stackoverflow.com/questions/33727432/how-to-plot-positions-along-a-chromosome-graphic
+  g <- ggplot(data = df)
+  g <- g + theme_bw()
+  # base rectangles for the chroms, with numeric value for each chrom on the x-axis
+  g <- g + geom_rect(aes(xmin = as.numeric(IMGScaffold) - 0.2, 
+                         xmax = as.numeric(IMGScaffold) + 0.2, 
+                         ymax = stop, ymin = 1), 
+                     color = "black", fill = "gray")
+  # rotate the plot 90 degrees
+  g <- g + theme(axis.text.x = element_text(angle = 90, hjust = 0.5, vjust = 0.5, size = 5, color = 'black'))
+  # add bands for SCGs
+  g <- g + geom_rect(data = dg, aes(xmin = as.numeric(IMGScaffold) - 0.2,
+                                    xmax = as.numeric(IMGScaffold) + 0.2,
+                                    ymax = stop, ymin = start, 
+                                    fill = genus),
+                     color = "black")
+  g <- g + guides(fill = guide_legend(title = "Taxonomy of a SCG"), direction = "vertical", title.position = "bottom")
+  g <- g + scale_x_discrete(limits = names(df_names))
+  g <- g + scale_fill_viridis(option = "viridis", discrete = TRUE, name = "Taxonomy", breaks = levels(dg$genus))
+  g <- g + labs(x = "scaffold", y = "length/position (bp)", title = "Number of SCGs in Phormidium MAG")
+  plot(g)
+}
+P_SuppFig2()
+```
+
+### Supplemental Figure 3.
+
+Putative bacillariophyte diatoms are present in these data, and we can see potential chloroplasts by the presence of photosynthetic genes on these contigs. In this graph, I've evaluated the average coverages of putative chloroplasts in the metagenome (Average_gDNA) and metatranscriptomic data (Average_cDNA), and grouped them by day/night. The y-axis is log-transformed average coverage. Putative chloroplasts are plotted on the x-axis. Labels comprise the MAG bin to which it belongs, and the length of the contig.
+
+Note that Bin_3_3 has three putative chloroplast contigs, two of which are pretty good sized (30k and 40k). In contrast, Bin_3_1 has only two putative chloroplast contigs (and short ones at that) attributed to it. However, one of its short (5856bp) chloroplast contigs has way more coverage in the metatranscriptomic data than expected from the metagenome, and more than those belonging to Bin_3_3.
+
+```{r SuppFigure_3, fig.width = 4, fig.height = 4, include = TRUE, results = "hide"}
+df <- import_suppfigure_3_df
+P_SuppFig3 <- function(){
+g <- ggplot(data = df, aes(x = scaffold, y = average_coverage, fill = source))
+g <- g + theme_bw()
+g <- g + geom_bar(stat = "identity", width = 0.90, show.legend = TRUE, position = position_dodge(preserve = "single"))
+g <- g + geom_bar(stat = "identity", width = 0.90, color = "black", position = position_dodge(preserve = "single"))
+g <- g + scale_fill_manual(values = timeColors)
+g <- g + theme(axis.text.x = element_text(angle = 90, hjust = 0.5, vjust = 0.5, size = 10, color = 'black'))
+g <- g + labs(x = "Bin: photosynthetic scaffold length (bp)", y = "Average coverage (x)", title = "Putative diatom chloroplasts", size = 20)
+g <- g + scale_x_discrete(breaks = df$scaffold, labels = paste(df$anvi_bin, df$length, sep = ": "))
+g <- g + facet_wrap(.~nucleic_acid, nrow = 1, scales = "free_x")
+g <- g + scale_y_continuous(name = "log(average coverage)", trans = "log10",
+                            labels = c(0, 1, 10, 100, 1000),
+                            breaks = c(min.y, 1, 10, 100, 1000))
+g <- g + theme(legend.position = "bottom")
+plot(g)
+}
+P_SuppFig3()
+```
+
+### Supplemental Figure 4.
+
+This is an expanded version of *Figure 2*, plotting sample-normalized TPM.
+
+```{r SuppFigure_4, fig.width = 10, fig.height = 7, include = TRUE, results = "hide"}
+#SuppFigure 4: psbA and psaA TPM sample-specific. 
+df <- import_figure_2_suppfigure_4_df[import_figure_2_suppfigure_4_df$metric == "CDS_TPM_sample",]
+min.y <- 0.1
+df$TPM[df$TPM == 0] <- min.y
+max.y <- round_any(max(df$TPM), 10^round(log10(max(df$TPM))), f = ceiling)
+
+P_SuppFig4 <- function(){
+g <- ggplot(data = df, aes(x = Gene))
+g <- g + theme_bw()
+g <- g + geom_boxplot(aes(y = TPM, fill = time))
+g <- g + geom_point(aes(y = TPM, fill = time), 
+                    show.legend = FALSE,
+                    position = position_dodge(width = 0.8), 
+                    shape = 21)
+g <- g + facet_grid(.~Organism, scales = "free_x", space = "free_x", labeller = labeller(Organism = label_wrap_gen(width = 10, multi_line = TRUE))) #allows bars to be same width across all panels
+g <- g + theme(axis.text.x = element_text(angle = 90, hjust = 1, vjust = 0.5, size = 10, color = "black"))
+g <- g + theme(panel.grid.major = element_blank(), 
+               panel.grid.minor = element_blank(),
+               strip.text.x = element_text(angle = 90))
+g <- g + scale_x_discrete(breaks = df$Gene, labels = paste(df$label, df$accession, sep = ": "))
+g <- g + labs(x = "Gene", y = "TPM", 
+              size = 20)
+g <- g + scale_y_continuous(name = "logTPM", trans = "log10", 
+                            # labels = comma, 
+                            labels = c(0, 1, 10, 100, 1000),
+                            breaks = c(min.y, 1, 10, 100, 1000))
+g <- g + scale_fill_manual(values = timeColors)
+plot(g)
+}
+
+P_SuppFig4()
+```
+
+### Supplemental Figure 5.
+
+When figuring out whether *Phormidium* anoxygenic photosynthesis (indicated by *sqr*) is prevalent, we examined the expression of other photosystem I genes such as *psaL* and *psaX*. The activity levels of these two photosystem I genes are similar to the expression of type I *sqr* in *Phormidium*.
+
+```{r SuppFigure_5, fig.width = 4, fig.height = 4, include = TRUE, results = "hide"}
+df <- import_suppfigure_5_6_df
+keep <- c("sqr", "psaL", "psaX")
+df <- df[df$anvi_bin == "Bin_1" & df$Metric == "CDS_TPM_sample" & df$gene_name %in% keep,]
+df <- drop.levels(df)
+df$gene_name <- factor(df$gene_name, levels = keep)
+df$Protein <- factor(df$Protein, levels = unique(df[order(df$gene_name, df$scaffold),]$Protein))
+
+dg <- df[df$Value == 0,] #most
+dg$combo <- paste(dg$Protein, dg$time, sep =" ")
+dg <- dg[!duplicated(dg$combo),] 
+dg$combo <- factor(dg$combo, levels = unique(dg$combo))
+
+dh <- df[!df$Value == 0,] #20%
+dh$combo <- paste(dh$Protein, dh$time, sep =" ")
+dh$combo <- factor(dh$combo, levels = unique(dh$combo))
+dh <- rbind(dh, dg[!dg$combo %in% dh$combo,]) 
+dh <- dh[order(dh$gene_name),]
+drop <- "combo"
+df <- dh[, !colnames(dh) %in% drop]
+
+P_SuppFig5 <- function(){
+g <- ggplot(data = df, aes(x = Protein))
+g <- g + theme_bw()
+g <- g + geom_boxplot(aes(y = Value, fill = time))
+g <- g + geom_point(aes(y = Value, fill = time), position = position_dodge(width = 0.8), shape = 21, show.legend = FALSE)
+g <- g + expand_limits(y = 0)
+g <- g + theme(axis.text.x = element_text(angle = 90, hjust = 0.5, vjust = 0.5, size = 10, color = "black"))
+g <- g + scale_x_discrete(breaks = df$Protein, labels = paste(df$gene_name, df$Protein, sep = ": "))
+g <- g + labs(x = "Gene", y = "Sample-normalized TPM", size = 20)
+g <- g + scale_fill_manual(values = timeColors)
+plot(g)
+}
+
+P_SuppFig5()
+
+```
+
+### Supplemental Figure 6.
+
+What oxidases is *Phormidium* expressing?
+
+```{r SuppFigure_6, fig.width = 5, fig.height = 7, include = TRUE, results = "hide"}
+df <- import_suppfigure_5_6_df
+keep <- c("cbb3", "cb1", "cbo3", "cox")
+df <- df[df$anvi_bin == "Bin_1" & df$Metric == "CDS_TPM_bin" & df$gene_name %in% keep,]
+df <- drop.levels(df)
+df$gene_name <- factor(df$gene_name, levels = keep)
+df$Protein <- factor(df$Protein, levels = unique(df[order(df$gene_name, df$scaffold),]$Protein))
+
+dg <- df[df$Value == 0,] #most
+dg$combo <- paste(dg$Protein, dg$time, sep =" ")
+dg <- dg[!duplicated(dg$combo),] 
+dg$combo <- factor(dg$combo, levels = unique(dg$combo))
+
+dh <- df[!df$Value == 0,] #20%
+dh$combo <- paste(dh$Protein, dh$time, sep =" ")
+dh$combo <- factor(dh$combo, levels = unique(dh$combo))
+dh <- rbind(dh, dg[!dg$combo %in% dh$combo,]) 
+dh <- dh[order(dh$gene_name),]
+drop <- "combo"
+df <- dh[, !colnames(dh) %in% drop]
+
+P_SuppFig6 <- function(){
+g <- ggplot(data = df, aes(x = Protein))
+g <- g + theme_bw()
+g <- g + geom_boxplot(aes(y = Value, fill = time))
+g <- g + geom_point(aes(y = Value, fill = time), position = position_dodge(width = 0.8), shape = 21, show.legend = FALSE)
+g <- g + scale_fill_manual(values = timeColors)
+g <- g + theme(axis.text.x = element_text(angle = 90, hjust = 0.5, vjust = 0.5, size = 10, color = 'black'))
+g <- g + labs(x = "Gene", y = "Bin-normalized TPM", size = 20)
+g <- g + scale_x_discrete(breaks = df$Protein, labels = paste(df$gene_name, df$Protein, sep = ": "))
+g <- g + facet_wrap(.~Description, nrow = 1, scales = "free", labeller = labeller(Description = label_wrap_gen(width = 10, multi_line = TRUE)))
+plot(g)
+}
+P_SuppFig6()
+```
+
+### Supplemental Figure 7.
+
+Building from **Figure 5**, what are the expression patterns of reductive *dsrA* and *dsrD* in day and night? Do highly-expressed genes belong to any high-quality MAGs?
+
+In this graph, *dsrA* and *dsrD* from the same contig are plotted adjacent to each other. About half the contigs were binned. Three contigs with *dsrAD* were not binned, so I relied upon the taxonomy of the contig. The first panel of the graph is the sample-normalized TPM, and contigs have this metric calculated for its *dsrAD* genes. 
+
+The second panel is bin- and sample-normalized TPM of contigs with *dsrAD* that belonged to MAGs. The third panel plots the % complete of the MAGs in the metagenome. The fourth and fifth panels show the average coverages in the metagenome and metatranscriptomic data for those MAGs. Note that the contigs that were not able to be binned, are not shown in these panels.
+
+```{r SuppFigure_7, fig.width = 10, fig.height = 10, include = TRUE, results = "hide"}
+
+activityColors <- c("white", "black", "grey80")
+names(activityColors) <- c("Day", "Both", "Night")
+
+df <- import_suppfigure_7_df
+df$Time <- df$source
+oldnames <- c("day", "night")
+newnames <- c("Day", "Night")
+df$Time <- mapvalues(df$Time, from = oldnames, to = newnames)
+df <- df[with(df, order(percent_completion, decreasing = TRUE)),]
+
+keep <- c("anvi_bin", "Time", "Protein", "Gene name", "CDS_TPM_sample", "CDS_TPM_bin", "Organism", "Mean gDNA coverage", "Mean cDNA coverage", "percent_completion")
+df <- melt(df[, colnames(df) %in% keep], id.vars = c("anvi_bin", "Organism", "Protein", "Gene name", "Time"))
+colnames(df) <- c("anvi_bin", "Organism", "Protein", "Gene name", "Time", "Metric", "Value")
+df <- drop.levels(df)
+df$Metric <- factor(df$Metric, levels = c("CDS_TPM_sample", "CDS_TPM_bin", "percent_completion", "Mean gDNA coverage", "Mean cDNA coverage"))
+
+# dg <- df[df$Value == 0,]
+# dg <- na.omit(dg)
+keep <- c("CDS_TPM_sample", "CDS_TPM_bin")
+dg <- df[df$Value == 0 & df$Metric %in% keep,] #most
+dg <- dg[!is.na(dg$Protein),]
+dg$combo <- paste(dg$Protein, dg$Time, dg$Metric, sep =" ")
+dg <- dg[!duplicated(dg$combo),] 
+dg$combo <- factor(dg$combo, levels = unique(dg$combo))
+
+#dh <- df[!df$Value == 0,]
+#dh <- na.omit(dh)
+dh <- df[!df$Value == 0 & df$Metric %in% keep,] #20%
+dh <- dh[!is.na(dh$Protein),]
+dh$combo <- paste(dh$Protein, dh$Time, dh$Metric, sep =" ")
+dh$combo <- factor(dh$combo, levels = unique(dh$combo))
+dh <- rbind(dh, dg[!dg$combo %in% dh$combo,]) 
+
+keep <- c("Mean gDNA coverage", "Mean cDNA coverage", "percent_completion")
+dg <- df[df$Metric %in% keep,] #most
+dg <- dg[!is.na(dg$Protein),]
+oldnames <- c("Day", "Night")
+newnames <- c("Both", "Both")
+dg$Time <- mapvalues(dg$Time, from = oldnames, to = newnames)
+dg <- drop.levels(dg)
+dg$combo <- paste(dg$Protein, dg$Time, dg$Metric, sep =" ")
+dg <- dg[!duplicated(dg$combo),] 
+dg$combo <- factor(dg$combo, levels = unique(dg$combo))
+dh <- rbind(dh, dg[!dg$combo %in% dh$combo,]) 
+
+dh <- dh[order(dh$`Gene name`),]
+drop <- "combo"
+df <- dh[, !colnames(dh) %in% drop]
+
+P_SuppFig7 <- function(){
+  g <- ggplot(data = df %>%
+                drop_na(Value), aes(x = Protein))
+  g <- g + theme_bw()
+  g <- g + geom_boxplot(aes(y = Value, fill = Time))
+  g <- g + geom_point(aes(y = Value, fill = Time), 
+                      position = position_dodge(width = 0.8),
+                      shape = 21, show.legend = FALSE)
+  g <- g + scale_fill_manual(values = activityColors)
+  g <- g + theme(axis.text.x = element_text(angle = 90, hjust = 1, vjust = 0.5, size = 7, color = "black"))
+  g <- g + labs(x = "scaffold", y = "TPM or bin coverage (X) or bin completion (%)", size = 20)
+  g <- g + scale_x_discrete(breaks = df$Protein, labels = paste(df$Organism, df$anvi_bin, df$`Gene name`, sep = ":"))
+  g <- g + facet_wrap(.~Metric, ncol = 1, scales = "free_y")
+  g <- g + theme(legend.position = "bottom")
+  plot(g)
+}
+P_SuppFig7()
+
+```
+
+### Supplemental Figure 8.
+
+What other kinds of sulfur cycling genes are observed in the metagenome and metatranscriptomic data? Here I have plotted the sample-normalized TPM of *fccA*, *fccB*, and *soxA* genes in daytime and nighttime. Genes are labeled on the x-axis. If the genes were on contigs that were binned, the MAG bins are included in the x-axis label. 
+
+```{r SuppFigure_8, fig.width = 10, fig.height = 5, include = TRUE, results = "hide"}
+timeColors <- c("white", "grey80")
+names(timeColors) <-  c("day", "night")
+
+df <- import_suppfigure_8_df
+df <- df[with(df, order(percent_completion, decreasing = TRUE)),]
+
+# #if you want to plot "placeholder 0s" for genes
+# dg <- df[df$CDS_TPM_sample == 0,] #most
+# dg$combo <- paste(dg$Protein, dg$time, sep =" ")
+# dg <- dg[!duplicated(dg$combo),]
+# dg$combo <- factor(dg$combo, levels = unique(dg$combo))
+# 
+# dh <- df[!df$CDS_TPM_sample == 0,] #5%
+# dh$combo <- paste(dh$Protein, dh$time, sep =" ")
+# dh$combo <- factor(dh$combo, levels = unique(dh$combo))
+# dh <- rbind(dh, dg[!dg$combo %in% dh$combo,])
+# dh <- dh[order(dh$Protein),]
+# drop <- "combo"
+# df <- dh[, !colnames(dh) %in% drop]
+
+#let's keep only the non-zero observations
+dh <- df[!df$CDS_TPM_sample == 0,] #5%
+dh$combo <- paste(dh$Protein, dh$time, sep =" ")
+dh$combo <- factor(dh$combo, levels = unique(dh$combo))
+drop <- "combo"
+df <- dh[, !colnames(dh) %in% drop]
+
+P_SuppFig8 <- function(){
+g <- ggplot(data = df, aes(x = Protein))
+g <- g + theme_bw()
+g <- g + geom_boxplot(aes(y = CDS_TPM_sample, fill = time))
+g <- g + geom_point(aes(y = CDS_TPM_sample, fill = time), position = position_dodge(width = 0.8), shape = 21, show.legend = FALSE)
+g <- g + expand_limits(y = 0)
+g <- g + facet_grid(.~`Gene name`, scales = "free_x", space = "free_x", labeller = labeller(Organism = label_wrap_gen(10)))
+g <- g + theme(axis.text.x = element_text(angle = 90, hjust = 1, vjust = 0.5, size = 5, color = "black"))
+g <- g + scale_x_discrete(breaks = df$Protein, labels = str_wrap(paste(df$Organism, df$anvi_bin, df$IMGScaffold, sep = ": "), width = 20))
+g <- g + labs(x = "Gene", y = "Sample-normalized TPM", size = 20)
+g <- g + scale_fill_manual(values = timeColors)
+plot(g)
+}
+P_SuppFig8()
+```
+
+### Supplemental Table 2.
+
+These are the summary statistics of the 144 MAGs extracted from the metagenome. 
+
+* **total length**: length of the MAG in base pairs (bp)
+* **Mean gDNA coverage**: Mapping metagenomic reads to the assembled contigs generated average observed coverage for each contig per sample. For each bin, I averaged the observed coverages of its contigs.
+* **Mean cDNA coverage**: Mapping the transcripts this time.
+
+Then the following columns are key metabolisms we evaluated the MAGs for indicator genes. An "X" in the field means that the indicator gene in the parentheses was found in the MAG.
+
+```{r supp_table_2}
+df <- import_supptable_2_df #this table has in the "metabolism" columns the FIRST observation of a contig with the specified indicator gene. That doesn't mean this is the "BEST" indicator gene or representative contig. Let's change how this table is presented, by replacing specific contig names with a generic "X" to indicate that the gene is present.
+keep <- c("Autotrophy (Rubisco)", "Autotrophy WL Pathway (acsB)", "Photosystem I (psaA)", "Photosystem II (psbA)", "AP reaction cores (pufL/M)", "Bacteriochlorophyll (bchX/Y/Z)", "Denitrification (nirK)", "Nitrogen fixation (nifH+D/K)", "H2 oxidation (hupL/hydB)", "Methane oxidation (mmoC)", "Oxygen respiration (cbo3, cbb3, cox1, cb1)", "S reduction/oxidation (dsrA/rdsrA)", "Sulfide redox (fcc)", "Sulfite oxidation (aprA)", "Thiosulfate oxidation (soxA)")
+df2 <- df[, colnames(df) %in% keep]
+df2 <- data.frame(sapply(df[, colnames(df) %in% keep], function(x) ifelse(!is.na(x), "X", NA)))
+colnames(df2) <- keep
+df <- cbind(df[, !colnames(df) %in% keep], df2)
+
+colnames(df)[colnames(df) == "anvi_bin"] <- "MAG"
+
+knitr::kable(df, caption = "Summary statistics of MAGs in Middle Island Sinkhole metagenome",
+             format = "html"
+             #format = "latex"
+             ) %>%
+kable_styling(
+  bootstrap_options = c("striped", "hover")
+  #latex_options = "scale_down"
+              ) %>%
+  scroll_box(width = "700px", height = "200px")
+
+```
+
+## Conclusion
+
+***Phormidium* is an abundant and transcriptionally active member of the photosynthetic community.** This cyanobacterial MAG is highly covered in the metagenome and metatranscriptomic samples (*Supplemental Figure 1*). Lots of metatranscriptomic reads mapped to *Phormidium* genes, notably those belonging to photosynthesis and autotrophy (*Figure 2* and *Figure 6*). Variants of *psbA* optimized for different redox conditions are present in the *Phormidium* genome and differentially active (*Figure 4*).
+
+I observed that *Phormidium* was transcribing sulfide quinone reductase (*sqr*) genes in day and night (*Figure 4*). There was higher relative expression of *sqrII*, the type putatively involved in sulfide detoxification, compared to *sqrI*, the type putatively involved in anoxygenic photosynthesis based on phylogeny. The expression patterns of *sqrI* are similar to those of photosystem I genes *psaL* and *psaX* (*Supplemental Figure 5*), suggesting that *sqrI* expression is coupled with operation of photosystem I (aka, evidence for anoxygenic photosynthesis using sulfide).
+
+***Planktothrix* and *Pseudanabaena* are less abundant, maybe functionally distinct, cyanobacteria in the community.** We have good *Planktothrix* and *Pseudanabaena* MAGs (*Supplemental Table 2*), and like *Phormidium* they have different versions of the *psbA* gene. *Phormidium* and *Pseudanabaena* have variants for no oxygen evolution (*psbA2*), which *Planktothrix* does not have. Yet we observed activity in the metatranscriptomic data of only the versions transcribed for low-oxygen (*psbA3*) or typical redox (*psbA4*) conditions (*Figures 2 and 3*). Further, neither of these cyanobacterial MAGs were actively transcribing any of their *sqr* genes (*Figure 4*) (or maybe *Phormidium* was swamping out the metatranscriptome).
+
+Interestingly, *Pseudanabaena* has a type IV *sqr* gene that is uncommonly observed in cyanobacteria. It was first identified in *Geitlerinema sp. PCC9228* isolated from a hypersaline lake that experiences high sulfide concentrations, but *Geitlerinema* uses its type I *sqr* for anoxygenic photosynthesis (Grim and Dick, 2016). Another cyanobacterium, *Leptolyngbya sp. strain hensonii* has only a type IV *sqr* for anoxygenic photosynthesis [(Dick, Grim, and Klatt, 2018)](https://doi.org/10.1146/annurev-earth-082517- 010035)[(Hamilton et al., 2018)](https://doi.org/10.1038/ismej.2017.193).
+
+Are *Phormidium* and sulfur oxidizing bacteria taking on the lion's share of consuming/detoxifying sulfide? If so, that could potentially open geochemical space for the survival of other cyanobacteria (such as *Planktothrix*) that may be more sensitive to variable sulfide.
+
+**Bacillariophyte diatoms are abundant and elusive members of the mat.** Take with a grain of salt, since my expertise is not in eukaryote genome reconstruction and exploration, I saw lots of reads and a good portion of the metagenome recruiting to two putative diatom MAGs (*Supplemental Figure 3*). Diatom photosynthesis is active in the mat (*Figure 2* and *Figure 6*). However, unlike cyanobacteria, diatoms do not have variants of *psbA* for different oxygen/redox conditions. Given the sulfide concentrations in the mat, and potential for constant sulfide exposure from sulfate reducing bacteria, these diatoms are making it work.
+
+**Sulfur cyclers are influential members of the MIS mat.** We have a handful of good-quality MAGs that are putative sulfate reducers, based on the presence of the *dsrA* gene (*Figure 1*, *Figure 5*, *Supplemental Figure 7*, and *Supplemental Table 2*). There is some activity of the Wood-Ljungdahl Pathway of autotrophy (*Figure 6*).
+
+Sadly we did not get such great sulfur oxidizing bacterial MAGs (*Figure 1* and *Supplemental Table 2*). Many of the *rdsrA* genes observed in the metatranscriptomic data, were on contigs that could not be binned (*Figure 5*). 
+
+### And that's it. Go read the mansucript if you want more!
+
+## References
+
+1. [Grim and Dick, 2016](https://doi.org/10.3389/fmicb.2016.01546)
+2. [Dick, Grim, and Klatt, 2018](https://doi.org/10.1146/annurev-earth-082517- 010035)
+3. [Hamilton et al., 2018](https://doi.org/10.1038/ismej.2017.193)
+4. [Grim et al., 2021](https://doi.org/10.1128/mSystems.01042-21) *this manuscript*
